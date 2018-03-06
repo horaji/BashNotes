@@ -1,0 +1,2107 @@
+# ... tzv.: octothorpe ... specialni nazev pro root prompt
+$ ... uzivatelsky znak promptu
+----------------------------------------------------------------------
+
+Thompson 
+Bourne shell  ... /bin/sh
+Bourne Again SHell  ... /bin/bash           ... napodoba Bourne shellu pod projektem GNU
+Korn Public Shell ... /bin/ksh  ... z Bell laboratori, pan Korn jeste decentne stale udrzuje
+Almquist's Shell ... 'truc' shell, schvalne nepohodlny, jako revolta proti bash, pozdeji byl dodelan Almquist's shell ruznymi zpusoby:
+								/bin/sh
+								/bin/ash
+								/busybox
+								/bin/dash ... v debianu
+
+Z-shell ... /bin/zsh  ... 'labrador' mezi shelly, podsouva nektere moznosti rovnou, snazi se byt pohodlnejsi za kazdych okolnosti 
+C shell ... neni standardizovan POSIX
+
+prepnuti shellu ... chsh zvolenyshell ... ale pozor ten shell musi byt propsany v seznamu shellu v souboru : /etc/shells
+
+jinak je tu CENTOS, instalace pres : yum install
+
+- prepnout se na root ... su root, propsat heslo
+- nainstalovat napr. zsh ... yum install zsh
+- pak uz bude videt uvnitr seznamu v : /etc/shells
+
+obsah /etc/shells v Gopasu:
+
+/bin/sh
+/bin/bash
+/sbin/nologin
+/bin/dash
+/bin/tcsh
+/bin/csh
+
+prompt:
+-------
+krizek ... root 
+uzivatel ... dolar
+
+v terminalu mluvime pomoci shellu a my to vidime diky terminalu(konzoli)
+bonusy v terminalech - tim se odlisuji jejich vlastnosti, napr. shellu jsou jedno vsechny ruzne znaky, znak. sady, toto je zalezitost terminalu
+
+vestavene prikazy 	 | 
+		 	 |--- je to jedno, zakladni finta ... neni nutne se zajimat o to, zda poustim to nebo to    (napr. napiseme : ls, clear, pwd, id, w, who  a vubec neresime, zda je to prikaz nebo program)
+externi programy  	 |       
+			 |
+vlastni programy/skripty |
+
+
+historie k vytvoreni miniskriptu 'kolikjetu.sh' :
+--------------------------------------------------
+    6  ll
+    7  view 1
+    8  clear
+    9  view loginentries
+   10  rm 1
+   11  ls -lart
+   12  clear
+   13  ll
+   14  cd ..
+   15  ls -ld notes
+   16  ls -la
+   17  cd mynotes/
+   18  clear
+   19  ls -lart
+   20  vi monday
+   21  su root
+   22  echo $SHELL
+   23  bash
+   24  ls
+   25  chmod +x kolikjetu.sh
+   26  mkdir bin
+   27  mv kolikjetu.sh bin/.
+   28  cd bin/
+   29  ./kolikjetu.sh
+   30  history
+   31  cd ..
+   32  vi monday
+   33  clear
+   34  cd bin/
+   35  ./kolikjetu.sh
+   36  cd ..
+   37  l
+   38  ll
+   39  history
+
+
+   druha konzole: 
+  --------------
+
+    4  useradd -m -c 'Jiri Horacek' horacjiri
+    5  passwd horacjiri
+    6  pwd
+    7  ls -la
+    8  su horacjiri
+    9  clear
+   10  ls -la
+   11  id -a
+   12  pwd
+   13  clear
+   14  id -a
+   15  su horacjiri
+   16  yum install zsh
+   17  view /etc/shells
+   18  clear
+   19  hostname
+   20  id -a
+   21  view monday
+   22  /bin/zsh
+   23  hostname
+   24  id
+   25  useradd -m -c 'Cipisek' cipisek
+   26  passwd cipisek
+   27  history
+
+-----------------------------------------------
+
+ Ctrl A , Ctrl E ... na zacatek, na konec
+ Ctrl W ... smazat slovo
+ meta f, meta b ... meta byva jako alt ... skok o slovo dopredu/dozadu (f, b )
+ Ctrl S ... zamrznuti behu ... Ctrl Q ... uvolneni 
+
+ Ctrl R ... vyhledavani v historii, prohledavani dal = znovu Ctrl R, enter, pokud chci vybrat
+  
+-------------------------------------------------------------------------------------------------------
+
+ history v bashi ... zapise se po odhlaseni, pokud se nepodari odhlasit korektne, tak se do .bash_history nic neulozi
+ locate .bash_history
+ korn shell vetsinou defaultne history neuklada, ale je to mozne nastavit do .ksh_history
+
+----------------------------------------------------------------------------------------------------------------------------
+	ALIASY
+       --------
+
+ ls -alh # h je pro 'human'
+ [horacjiri@localhost mynotes]$ alias lh='ls -alh'
+[horacjiri@localhost mynotes]$ lh
+celkem 20K
+drwxrwxr-x 3 horacjiri horacjiri 4,0K 26. úno 11.12 .
+drwx------ 5 horacjiri horacjiri 4,0K 26. úno 11.12 ..
+drwxrwxr-x 2 horacjiri horacjiri 4,0K 26. úno 10.27 bin
+-rw-rw-r-- 1 horacjiri horacjiri  285 26. úno 09.53 loginentries
+-rw-rw-r-- 1 horacjiri horacjiri 3,5K 26. úno 11.12 monday
+[horacjiri@localhost mynotes]$
+ 
+-----------------------------------------------------------------------------------------------------------------------------
+
+ --color=auto ... zapinani a vypinani nastaveni barev v zavislosti na vystupu, kam se dany kod posila
+
+---------------------------------------------------------------------------------------------------------------
+v BASH se nejprve bude poustet soubor profilu:
+~/.bash_profile 
+[horacjiri@localhost mynotes]$ locate .bash_profile
+/etc/skel/.bash_profile
+/home/horacjiri/.bash_profile
+
+jsou 2, jeden s teckou na zacatku v $HOME, druhy bez tecky v /etc :
+[horacjiri@localhost etc]$ ls -ld /etc/profile
+-rw-r--r--. 1 root root 1841 21. bře  2017 /etc/profile
+[horacjiri@localhost etc]$
+
+[horacjiri@localhost mynotes]$ ls -ld /etc/profile.d
+drwxr-xr-x. 2 root root 4096 26. úno 07.32 /etc/profile.d
+
+, vse co je v adresari profile.d se zahrnuje do /etc/profile
+ v /etv/profile je na to na konci for cyklus: 
+
+for i in /etc/profile.d/*.sh ; do
+     68     if [ -r "$i" ]; then
+     69         if [ "${-#*i}" != "$-" ]; then
+     70             . "$i"
+     71         else
+     72             . "$i" >/dev/null 2>&1
+     73         fi
+     74     fi
+     75 done
+
+----------------------------------------------------------------------------------------------
+
+prikaz -m -v | --coloer=auto /cesta/
+
+parametry zacinajici jednou nebo dvema pomlckami tem rikame modifikatory, jdou sdruzovat, napr. zde:
+	-mv
+        - o outputfile
+modifikatory neovlivnuji co se bude delat s cim, ale jak se to bude delat
+useradd -m (napr. zde rika, ze se bude prirazovat i $HOME adresar)
+
+program : cat (puvodne z anglickeho concatenate zkratka), vsechno co vepisem, to vlozi na standartni vystup, cimz defacto ty soubory propoji
+
+expanzni znaky: * , ?  ... shell timto umi tzv. expandovat
+------------------------------------------------------------
+[horacjiri@localhost autori]$ cd ..
+[horacjiri@localhost mynotes]$ ls autori/b*
+autori/balzac  autori/bozena
+[horacjiri@localhost mynotes]$ echo autori/b*
+autori/balzac autori/bozena
+[horacjiri@localhost mynotes]$ cd autori/
+[horacjiri@localhost autori]$ touch b
+[horacjiri@localhost autori]$ cd ..
+[horacjiri@localhost mynotes]$ echo autori/b*
+autori/b autori/balzac autori/bozena
+[horacjiri@localhost mynotes]$
+
+
+[horacjiri@localhost mynotes]$ ls autori/[tb]*
+autori/b  autori/balzac  autori/bozena  autori/tolstoj
+[horacjiri@localhost mynotes]$
+
+
+[horacjiri@localhost autori]$ echo autori/c*
+autori/c*
+[horacjiri@localhost autori]$ touch c*
+[horacjiri@localhost autori]$ cd ..
+[horacjiri@localhost mynotes]$ ls autori/c*
+autori/c*
+[horacjiri@localhost mynotes]$
+
+
+shell tim padem dokaze poskladat urcitym zpusobem seznam argumentu, pokud chci predat i expanz.znaky, pak to 
+musime zarucit 3mi zpusoby: 
+
+1) \ ... backslash
+
+(pozn.: inspirace ve starickem 8bit cpm - to pak bylo inspiraci pro dos atd...)
+- Windows backslash trik nema
+2) ' ' ... single quotes
+
+3) " " ... double quotes
+
+ad1) priklad : 
+	[horacjiri@localhost mynotes]$ touch autori/bozena\ nemcova
+[horacjiri@localhost mynotes]$ ls -lart autori/
+celkem 8
+-rw-rw-r-- 1 horacjiri horacjiri    0 26. úno 11.42 tolstoj
+-rw-rw-r-- 1 horacjiri horacjiri    0 26. úno 11.42 nemcova
+-rw-rw-r-- 1 horacjiri horacjiri    0 26. úno 11.42 bozena
+-rw-rw-r-- 1 horacjiri horacjiri    0 26. úno 11.42 balzac
+-rw-rw-r-- 1 horacjiri horacjiri    0 26. úno 11.45 b
+-rw-rw-r-- 1 horacjiri horacjiri    0 26. úno 11.51 c*
+drwxrwxr-x 4 horacjiri horacjiri 4096 26. úno 11.58 ..
+-rw-rw-r-- 1 horacjiri horacjiri    0 26. úno 11.59 bozena nemcova
+drwxrwxr-x 2 horacjiri horacjiri 4096 26. úno 11.59 .
+[horacjiri@localhost mynotes]$
+
+=============================================================================================================
+
+rozlisovani internich a externich prikazu ???
+prikazem : type 
+
+napr.:
+[horacjiri@localhost mynotes]$ type ls
+ls je alias na „ls --color=auto“
+V /var/spool/mail/root máte novou poštu
+[horacjiri@localhost mynotes]$ pwd
+/home/horacjiri/mynotes
+[horacjiri@localhost mynotes]$ hostname
+localhost.localdomain
+[horacjiri@localhost mynotes]$ ls
+autori  bin  loginentries  monday
+[horacjiri@localhost mynotes]$ vi monday
+[horacjiri@localhost mynotes]$ vi monday
+[horacjiri@localhost mynotes]$ type type
+type je součást shellu
+[horacjiri@localhost mynotes]$ type ls
+ls je alias na „ls --color=auto“
+[horacjiri@localhost mynotes]$ type vim
+vim je zahashován (/usr/bin/vim)
+[horacjiri@localhost mynotes]$ type cd
+cd je součást shellu
+[horacjiri@localhost mynotes]$ type wc
+wc je /usr/bin/wc
+[horacjiri@localhost mynotes]$ type who
+who je /usr/bin/who
+[horacjiri@localhost mynotes]$ type touch
+touch je zahashován (/bin/touch)
+[horacjiri@localhost mynotes]$
+
+zjistim tim, zda se jedna o vestaveny prikaz ci externi program
+
+=============================================================================================================
+
+[horacjiri@localhost mynotes]$ type echo
+echo je součást shellu
+[horacjiri@localhost mynotes]$ type pwd
+pwd je součást shellu
+[horacjiri@localhost mynotes]$
+
+
+proc echo a pwd nejsou /bin/echo a /bin/pwd ... existuji ve 2 variantacha (vestaveny prikaz a ext.program)
+- v bash se rozhodli, ze nektere prikazy zahrnuji jakoby navic, z duvodu, ze jsou velmi casto volany
+v unixu - jadro pozadam o fork - udela kopii - chci nahradit tu kopii prikazem echo a pak se vrati nejaky
+navratovy kod - toto chce vzdy nejaky cas = je to vypocetne drahe 
+- u nekterych prikazu, kt. krome toho, ze existuji externe, tak ji zahrnout do vestavenych prikazu, prave pro
+to, aby nebyly vypocetne drahe
+
+
+v bash:
+[horacjiri@localhost mynotes]$ type sleep
+sleep je /bin/sleep
+
+v ksh:
+
+[root@localhost mynotes]# yum install ksh                           
+Zavedeny zásuvné moduly: fastestmirror, refresh-packagekit, security
+Uspořádává se průběh instalace                                      
+Loading mirror speeds from cached hostfile
+ * epel: ftp.icm.edu.pl
+ * extras: mirror.slu.cz
+Řeší se závislosti
+--> Spouští se kontrola transakce
+---> Package ksh.x86_64 0:20120801-36.el6_9 will be instalaci
+--> Řešení závislostí dokončeno
+
+Závislosti vyřešeny
+
+=================================================================================================================
+ Balíček              Arch                    Verze                               Repozitář                 Vel.
+=================================================================================================================
+Instaluje se:
+ ksh                  x86_64                  20120801-36.el6_9                   updates                  761 k
+
+Shrnutí transakce
+=================================================================================================================
+Install       1 Package(s)
+
+Celková velikost stahování: 761 k
+Nainstalovaná velikost: 1.7 M
+V pořádku [a/N]: a
+Stahují se balíčky:
+ksh-20120801-36.el6_9.x86_64.rpm                                                          | 761 kB     00:00
+Spouští se rpm_check_debug
+Spouští se test transakcí
+Test transakcí uspěl
+Spouští se transakce
+  Instaluje se  : ksh-20120801-36.el6_9.x86_64                                                               1/1
+  Verifying     : ksh-20120801-36.el6_9.x86_64                                                               1/1
+
+Nainstalováno:
+  ksh.x86_64 0:20120801-36.el6_9
+
+Hotovo!
+[root@localhost mynotes]#
+[root@localhost mynotes]#
+[root@localhost mynotes]# su horacjiri
+[horacjiri@localhost mynotes]$
+[horacjiri@localhost mynotes]$
+[horacjiri@localhost mynotes]$ ksh
+$ type sleep
+sleep is a shell builtin
+
+===============================================================================================================
+pouziti expanze v commandech:
+------------------------------
+rm /var/spool/lpd/lp1/*
+line too long
+--> prikazy mohou spadnout na Error: 'line too long'
+1) cd primo do daneho adresare
+2) pres : find -exec
+3) globbing (- pozor, zde nefunguje negace) 
+
+==============================================================================================================
+
+
+ 
+postupne provadeni prikazu - pokud napisu do jednoho radku oddelenim stredniky:
+
+cp .bash_history zaloha/bash_history-dnes ; cp /var/log/boot.log zaloha/bootlog-dnes
+
+===================================================================================================
+
+~horacjiri ... muj $HOME     ... cd (je totez cd ~ nebo jako totez cd $HOME)
+.  # aktualni adresar
+.. # nadrazeny adresar
+
+rychla kontrola, zda je to adresar nebo soubor: pri zmacknuti a doplnovani TAB - kdyz se automaticky za tim
+doplni slash=lomitko, tak to znaci, ze se jedna o adresar
+
+ls = ls . (vypis aktualni adresar)
+
+pri:  ls -a
+
+je videt, ze tam vzdy bude : . ..
+
+
+/  ... FS root ... jeden jediny FS, aplikace nevedi nic o discich
+
+existuji 2 znaky, kt. nesmi nikdy byt v nazvech souboru:
+-------------------------------------------------------
+1) lomitko /   # viz: 
+[horacjiri@localhost autori]$ mkdir g/d
+mkdir: adresář „g/d“ nelze vytvořit: Adresář nebo soubor neexistuje
+
+2) EOF # znak pro konec souboru
+vse ostatni muze byt v nazvech souboru, jsou to proste znaky a zhlediska unixu ve jmenech byt mohou
+============================================================================================================
+
+kdyz reknu 'unix unicode' = znamena to vzdy utf8
+
+pomoci prikazu : 'file' se da zjistovat typ souboru, opravdu nekde existuje soubor jmenem 'magic' a ten odhaduje
+na zaklade nekolika heuristik co je to za soubori, nemusi to byt uplne 100procentni, soubory nemusi mit v unixu
+priponu
+
+===========================================================================================================
+
+vsechny FS v unixu jsou case sensitive
+
+==========================================================================================================
+
+      	Promenne:
+       ----------
+
+shell podporuje promenne, ale nema typy ani deklarace, protoze vzdy defaultne ocekava, ze v promenne je text
+
+promenna=manzelka
+echo $promenna  #v postate se opet jedna o rozvinuti=expanzi
+manzelka
+ukazky: 
+[horacjiri@localhost mynotes]$ echo $promenna
+manzelka
+[horacjiri@localhost mynotes]$
+[horacjiri@localhost mynotes]$
+[horacjiri@localhost mynotes]$ echo 'Moje mila, to je $promenna'
+Moje mila, to je $promenna
+[horacjiri@localhost mynotes]$ echo "Moje mila, to je $promenna" # musi zde byt double quotes, aby to fungovalo
+Moje mila, to je manzelka
+[horacjiri@localhost mynotes]$ cislo=10000
+[horacjiri@localhost mynotes]$ echo $cislo
+10000
+[horacjiri@localhost mynotes]$
+
+# pri pouziti single quotes:
+
+[horacjiri@localhost mynotes]$ echo 'Moje mila, to je $promenna'
+Moje mila, to je $promenna
+[horacjiri@localhost mynotes]$ echo "Moje mila, to je \$promenna je $promenna."
+Moje mila, to je $promenna je manzelka.
+[horacjiri@localhost mynotes]$
+
+
+[horacjiri@localhost mynotes]$ dnesje=2018-02-26-13-59;dst=/home/horacjiri/mynotes/zaloha ; cp monday $dst/monday-$dnesje
+V /var/spool/mail/root máte novou poštu
+[horacjiri@localhost mynotes]$ ls -lart
+celkem 44
+-rw-rw-r-- 1 horacjiri horacjiri   285 26. úno 09.53 loginentries
+drwxrwxr-x 2 horacjiri horacjiri  4096 26. úno 10.27 bin
+drwxrwxr-x 2 horacjiri horacjiri  4096 26. úno 11.59 autori
+drwxrwxr-x 2 horacjiri horacjiri  4096 26. úno 13.32 adr
+-rw-rw-r-- 1 horacjiri horacjiri 14771 26. úno 13.57 monday
+drwx------ 5 horacjiri horacjiri  4096 26. úno 13.57 ..
+drwxrwxr-x 6 horacjiri horacjiri  4096 26. úno 13.57 .
+drwxrwxr-x 2 horacjiri horacjiri  4096 26. úno 14.00 zaloha
+[horacjiri@localhost mynotes]$ cd zaloha/
+[horacjiri@localhost zaloha]$ ll
+celkem 20
+-rw------- 1 horacjiri horacjiri   215 26. úno 13.24 bash_history-dnes
+-rw-rw-r-- 1 horacjiri horacjiri 14771 26. úno 14.00 monday-2018-02-26-13-59
+[horacjiri@localhost zaloha]$
+
+
+- kdyz se bohuzel napise blbe jmeno promenne, bash mi to vedet neda
+-----------------------------------------------------------------------------------
+     EXPORT promenne ma za nasledek, ze se dedi do shellovych potomku
+   -------------------------------------------------------------------
+Moje mila, to je $promenna je manzelka.
+[horacjiri@localhost mynotes]$
+[horacjiri@localhost mynotes]$
+[horacjiri@localhost mynotes]$ export promenna
+[horacjiri@localhost mynotes]$ echo $promenna
+manzelka
+[horacjiri@localhost mynotes]$ xterm &
+[1] 8104
+[horacjiri@localhost mynotes]$ No protocol specified
+xterm Xt error: Can't open display: :0
+^C
+[1]+  Ukončena 1             xterm
+---------------------------------------------------------------------
+
+ po exportu uz pujde promenna videt v env:
+----------------------------------------------
+
+[horacjiri@localhost mynotes]$ env | egrep manzelka
+promenna=manzelka
+
+
+promenne: USER, TERM, SHELL, PATH
+[horacjiri@localhost mynotes]$ env | grep TERM
+TERM=xterm #muze mit hodnotu napr. linux
+
+[horacjiri@localhost mynotes]$ echo $USER
+horacjiri
+
+--------------------------------------------
+BASH ma 2 promenne tykajici se nastaveni historie (ostatni shelly to maji zase jinak) :
+-------------------------------------------------
+HISTSIZE - kolik radku se ma v historii udrzovat
+HISTCONTROL - urcuje se tim 
+
+  117  ls
+  118  history
+[horacjiri@localhost mynotes]$ env | grep HIST
+HISTSIZE=1000
+HISTCONTROL=ignoredups # pri teto hodnote se ignoruje vicere opetovne zadani totozneho prikazu za sebou
+
+=========================================================================================================
+
+    pojistka proti prepsani promenne - pres readonly
+ =====================================================
+
+[horacjiri@localhost mynotes]$ echo $promenna
+manzelka
+[horacjiri@localhost mynotes]$ readonly promenna
+[horacjiri@localhost mynotes]$ promenna=milenka
+bash: promenna: proměnná pouze pro čtení
+
+zpet uz se ale neda dostat - udajne to nema jit, ale udajne to i presto nejak je (nepamatuje si)
+
+  unset promenne = zruseni promenne :
+ ------------------------------------
+  unset promenna
+
+[horacjiri@localhost mynotes]$ unset promenna
+bash: unset: promenna: nelze zrušit: variable jen pro čtení
+[horacjiri@localhost mynotes]$
+- da se to unset-nout pomoci nejakeho gnu pkg
+
+===========================================================================================================
+
+ Zadani promennych na jednom radku (neni potreba pouzit stredniku)
+ ----------------------------------------------------------------
+
+[horacjiri@localhost mynotes]$ first=isaac second=bashievic third=singer
+[horacjiri@localhost mynotes]$ echo $first
+isaac
+[horacjiri@localhost mynotes]$ echo $third
+singer
+[horacjiri@localhost mynotes]$ echo $second
+bashievic
+
+
+--------------------------------------------------------------
+      pocitani v interpretru:
+     ------------------------
+[horacjiri@localhost mynotes]$ echo $((13+20))
+33
+[horacjiri@localhost mynotes]$ echo $((65536-1024))
+64512
+[horacjiri@localhost mynotes]$
+[horacjiri@localhost mynotes]$ 65536-1024
+bash: 65536-1024: příkaz nenalezen
+[horacjiri@localhost mynotes]$
+[horacjiri@localhost mynotes]$ cislo=6
+[horacjiri@localhost mynotes]$ nekonecno=10000
+[horacjiri@localhost mynotes]$ echo $(($cislo+$nekonecno))
+10006
+[horacjiri@localhost mynotes]$
+
+
+racjiri@localhost mynotes]$ echo $((11/2)) # deleni zde je pouze bez zbytku
+5
+[horacjiri@localhost mynotes]$ echo $((9/2))
+4
+[horacjiri@localhost mynotes]$
+
+korn shell pry umi trochu lepsi aritmetiku:
+-------------------------------------------
+[horacjiri@localhost mynotes]$ ksh
+$ echo $((13,0/2))
+6,5
+$ echo $((13.0/2))  #  je mozne pouzit jen desetinnou carku
+ksh: 13.0/2: arithmetic syntax error
+$
+
+LEPSI je primo bash kalkulacka : bc
+-------------------------------------
+[horacjiri@localhost mynotes]$ bc -l
+bc 1.06.95
+Copyright 1991-1994, 1997, 1998, 2000, 2004, 2006 Free Software Foundation, Inc.
+This is free software with ABSOLUTELY NO WARRANTY.
+For details type `warranty'.
+10/26.54
+.37678975131876412961
+
+==========================================================================================================
+	echo:
+       ------
+echo -n "Zadej jmeno:"
+echo -e "..........fsfdg ,d sd sd "
+
+[horacjiri@localhost mynotes]$ printf "rawr ijsa 01 \n" #sam od sebe printf neodradkuje, musim mu dat \n
+rawr ijsa 01
+[horacjiri@localhost mynotes]$ printf "csdcas"
+csdcas[horacjiri@localhost mynotes]$ echo sadasf;echo
+sadasf
+
+[horacjiri@localhost mynotes]$ echo sadasf
+sadasf
+[horacjiri@localhost mynotes]$
+
+[horacjiri@localhost mynotes]$ printf "Moje mila, to je moje %s. " $promenna
+Moje mila, to je moje manzelka. [horacjiri@localhost mynotes]$ printf "Moje mila, to je moje %s. " $promenna \n
+Moje mila, to je moje manzelka. Moje mila, to je moje n. [horacjiri@localhost mynotes]$ printf "Moje mila, to je moje %s.  $promenna \ni"
+Moje mila, to je moje .  manzelka
+i[horacjiri@localhost mynotes]$
+
+=======================================================================================================
+
+PATH ... je ten trik, proc se shell netrapi, proc muzem poustet vestavene prikazy stejne jako exter.programy
+1) nejprve se hleda pri zadani v aliasech a ve vestavenych prikazech
+2) pokud se nenejade ani v alias, ani prikaz - tak az pak se bude prohledavat promenna PATH
+
+=======================
+	pridani meho $HOME do PATH:
+      -------------------------------
+[horacjiri@localhost bin]$ kolikjetu.sh
+bash: kolikjetu.sh: příkaz nenalezen
+[horacjiri@localhost bin]$
+[horacjiri@localhost bin]$ ecport PATH=$PATH:/home/horacjiri/mynotes/bin
+bash: ecport: příkaz nenalezen
+[horacjiri@localhost bin]$ export PATH=$PATH:/home/horacjiri/mynotes/bin
+[horacjiri@localhost bin]$
+
+, pak uz :
+----------
+[horacjiri@localhost mynotes]$ kolikjetu.sh
+5
+[horacjiri@localhost mynotes]$ ls
+adr  autori  bin  loginentries  monday  zaloha
+[horacjiri@localhost mynotes]$ cd ..
+[horacjiri@localhost ~]$ kolikjetu.sh
+5
+[horacjiri@localhost ~]$
+
+------------------------------
+
+kdyz do PATH dam cestu s teckou ci dvojteckou:  :.: nebo : na konci ci zacatku  -- bacha, nikdy takto, pak tam muze nekdo podstrcit skodlivy program
+----------------------------------------------------------------------------------------
+==============================================================================================================
+vsechny soubory maji k dispozici/pravo na tyto 3 soubory, kt. jsou defaultne pripojeny kazdemu Terminalu:
+0) STDIN ... standartni vstupa   <0  ... kdyz chceme predat klavesy, napr. potvrzeni Y
+1) STDOUT ... standartni vystup  1>  ... ta 1 byt nemusi , >> ... je append
+2) STDERR ... standartni chybovy vystup  2>
+
+
+priklad: 
+horacjiri@localhost mynotes]$ cat
+pisu pisu
+pisu pisu
+sl;a
+sl;a
+opakuje
+opakuje
+to
+to
+[horacjiri@localhost mynotes]$
+
+vstup->vystup
+
+dalsi priklad:
+---------------
+[horacjiri@localhost mynotes]$ ls -l autori/ > seznam_autoru
+[horacjiri@localhost mynotes]$ cat seznam_autoru
+celkem 0
+-rw-rw-r-- 1 horacjiri horacjiri 0 26. úno 11.45 b
+-rw-rw-r-- 1 horacjiri horacjiri 0 26. úno 11.42 balzac
+-rw-rw-r-- 1 horacjiri horacjiri 0 26. úno 11.42 bozena
+-rw-rw-r-- 1 horacjiri horacjiri 0 26. úno 11.59 bozena nemcova
+-rw-rw-r-- 1 horacjiri horacjiri 0 26. úno 11.51 c*
+-rw-rw-r-- 1 horacjiri horacjiri 0 26. úno 11.42 nemcova
+-rw-rw-r-- 1 horacjiri horacjiri 0 26. úno 11.42 tolstoj
+[horacjiri@localhost mynotes]$ ls -l autori/b* > seznam_autoru_od_b
+[horacjiri@localhost mynotes]$ cat seznam_autoru_od_b
+-rw-rw-r-- 1 horacjiri horacjiri 0 26. úno 11.45 autori/b
+-rw-rw-r-- 1 horacjiri horacjiri 0 26. úno 11.42 autori/balzac
+-rw-rw-r-- 1 horacjiri horacjiri 0 26. úno 11.42 autori/bozena
+-rw-rw-r-- 1 horacjiri horacjiri 0 26. úno 11.59 autori/bozena nemcova
+[horacjiri@localhost mynotes]$
+
+--------------------------------------------------------------------------------------------
+
+vseobecne, kdyz se neco podari, tak se nevypise nic
+cp soubor1 soubor2 #zde zadna hlaska
+cp -vi soubor1 soubor2 #zde uz ano
+
+Chybovy vystup:
+---------------
+
+2> chyby_seznamy
+
+
+priklad:
+----------
+
+[horacjiri@localhost mynotes]$ ls -l autori/z* > seznam_autoru_od_z 2> chyby
+[horacjiri@localhost mynotes]$ cat chyby
+ls: nelze přistoupit k autori/z*: Adresář nebo soubor neexistuje
+[horacjiri@localhost mynotes]$ ls -l autori/z* > seznam_autoru_od_z 2> chyby
+[horacjiri@localhost mynotes]$ cat chyby
+ls: nelze přistoupit k autori/z*: Adresář nebo soubor neexistuje
+[horacjiri@localhost mynotes]$ ls -l autori/z* > seznam_autoru_od_z 2>> chyby
+[horacjiri@localhost mynotes]$ cat chyby
+ls: nelze přistoupit k autori/z*: Adresář nebo soubor neexistuje
+ls: nelze přistoupit k autori/z*: Adresář nebo soubor neexistuje
+[horacjiri@localhost mynotes]$
+
+-------------------
+presmerovani ve skriptu do logu : 
+----------------------------------
+
+[horacjiri@localhost bin]$ kolikjetu.sh
+5
+[horacjiri@localhost bin]$ ls -lart
+celkem 16
+drwxrwxr-x 6 horacjiri horacjiri 4096 26. úno 15.29 ..
+-rwxrwxr-x 1 horacjiri horacjiri  143 26. úno 15.31 kolikjetu.sh
+drwxrwxr-x 2 horacjiri horacjiri 4096 26. úno 15.32 .
+-rw-rw-r-- 1 horacjiri horacjiri   69 26. úno 15.32 pelmel.log
+[horacjiri@localhost bin]$
+[horacjiri@localhost bin]$
+[horacjiri@localhost bin]$ cat pelmel.log
+ls: nelze přistoupit k autori/y*: Adresář nebo soubor neexistuje
+[horacjiri@localhost bin]$ cat kolikjetu.sh
+#! /bin/bash
+# Jednoduchy skript, ktery spocita prihlasene uzivatele
+who | wc -l
+echo "Zprava do logu" > pelmel.log
+ls autori/y* 2> pelmel.log
+[horacjiri@localhost bin]$
+
+
+=========================================================
+
+
+Kdyz bych to chtel posilat na chybovy vystup?
+----------------------------------------------
+2>&1
+
+'kopirovani chudeho muze'
+--------------------------
+horacjiri@localhost bin]$ cat < nusers > pelmel.log
+                                vstup    vystup 
+
+ukazka:
+[horacjiri@localhost bin]$ echo 'scsoahcs' > nusers
+[horacjiri@localhost bin]$ cat nusers
+scsoahcs
+[horacjiri@localhost bin]$
+[horacjiri@localhost bin]$ cat < nusers > pelmel.log
+[horacjiri@localhost bin]$ cat pelmel.log
+scsoahcs
+[horacjiri@localhost bin]$
+
+=============================================================================================
+
+kolona = spojeni nekolika pajpami
+----------------------------------
+
+========================================================================================================
+
+
+ukazka pajpy u strankovani pomoci 'more'
+-------------------------------------------
+
+[horacjiri@localhost mynotes]$ dmesg |more
+Initializing cgroup subsys cpuset
+Initializing cgroup subsys cpu
+Linux version 2.6.32-696.20.1.el6.x86_64 (mockbuild@x86_64_01.bsys.centos.org) (gcc version 4.4.7 20120313 (Red H
+at 4.4.7-18) (GCC) ) #1 SMP Fri Jan 26 17:51:45 UTC 2018
+Command line: ro root=UUID=61eb3d3f-e4cd-4ee5-b9b4-0a349bf18e58 rd_NO_LUKS rd_NO_LVM rd_NO_MD SYSFONT=latarcyrheb
+-sun16 crashkernel=auto LANG=cs_CZ.UTF-8  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet
+KERNEL supported cpus:
+  Intel GenuineIntel
+  AMD AuthenticAMD
+  Centaur CentaurHauls
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 000000000009d800 (usable)
+ BIOS-e820: 000000000009d800 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 00000000c9b83000 (usable)
+ BIOS-e820: 00000000c9b83000 - 00000000c9b8a000 (ACPI NVS)
+ BIOS-e820: 00000000c9b8a000 - 00000000ca4e3000 (usable)
+ BIOS-e820: 00000000ca4e3000 - 00000000ca76e000 (reserved)
+ BIOS-e820: 00000000ca76e000 - 00000000da7ed000 (usable)
+ BIOS-e820: 00000000da7ed000 - 00000000da885000 (reserved)
+ BIOS-e820: 00000000da885000 - 00000000da8c1000 (usable)
+ BIOS-e820: 00000000da8c1000 - 00000000da985000 (ACPI NVS)
+ BIOS-e820: 00000000da985000 - 00000000dafff000 (reserved)
+ BIOS-e820: 00000000dafff000 - 00000000db000000 (usable)
+ BIOS-e820: 00000000db800000 - 00000000dfa00000 (reserved)
+ BIOS-e820: 00000000f8000000 - 00000000fc000000 (reserved)
+ BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
+ BIOS-e820: 00000000fed00000 - 00000000fed04000 (reserved)
+ BIOS-e820: 00000000fed1c000 - 00000000fed20000 (reserved)
+ BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+ BIOS-e820: 00000000ff000000 - 0000000100000000 (reserved)
+ BIOS-e820: 0000000100000000 - 000000041e600000 (usable)
+SMBIOS version 2.7 @ 0xF04C0
+SMBIOS 2.7 present.
+DMI: Gigabyte Technology Co., Ltd. H87-HD3/H87-HD3, BIOS F10 08/18/2015
+AMI BIOS detected: BIOS may corrupt low RAM, working around it.
+e820 update range: 0000000000000000 - 0000000000010000 (usable) ==> (reserved)
+e820 update range: 0000000000000000 - 0000000000001000 (usable) ==> (reserved)
+e820 remove range: 00000000000a0000 - 0000000000100000 (usable)
+last_pfn = 0x41e600 max_arch_pfn = 0x400000000
+x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+original variable MTRRs
+reg 0, base: 0GB, range: 16GB, type WB
+reg 1, base: 16GB, range: 512MB, type WB
+reg 2, base: 3584MB, range: 512MB, type UC
+reg 3, base: 3520MB, range: 64MB, type UC
+reg 4, base: 3512MB, range: 8MB, type UC
+reg 5, base: 16880MB, range: 16MB, type UC
+--Pokračování--
+
+=======================================================================================================
+
+	less = je pokracovani more - je to vylepseny more (je novejsi a nazev vznikl z rceni 'mene je 
+         nekdy vice')
+       ----------------------------------------------------------------------------------------------
+
+  dmesg |less
+
+========================================================================================================
+
+           head - defaultne zobrazi jen 10 radek, jde mu vnutit pocet
+         -------------------------------------------------------------
+
+          tail - kdyz chci konec - opetovne default 10 radek
+         -----------------------------------------------------------
+        - umi sledovat, zda v souboru neco nepribyde 
+         tail -f soubor # toto umi udajne i less : less -f soubor
+
+==========================================================================================================
+		cerna dira : /dev/null
+              --------------------------
+
+          kolikjetu.sh > /dev/null 2>&1
+
+=========================================================================================================
+                               skript na odchytavani hesel:
+			      -----------------------------
+
+[horacjiri@localhost bin]$ bonzacek
+Zadej heslo:
+Zadej ho znovu nebo dalsi heslo:
+Tva tajna hesla jsou hla a ops.
+[horacjiri@localhost bin]$
+
+========================================================================================================
+
+>>vystup
+2>>chyby.log
+>soubor_na_vse  2>&1
+
+=======================================================================================================
+				27.2.2018
+[horacjiri@localhost root]$ cislo=123
+[horacjiri@localhost root]$ echo $cislo
+123
+[horacjiri@localhost root]$ druhe=pet
+[horacjiri@localhost root]$ echo $((cislo+druhe))
+123
+
+---------------------------------------------------------------------------------------------------------
+
+		Parametry 
+	$1 .... ${10}
+	skriptik pro soucet
+       ----------------------
+---
+#! /bin/bash
+
+# secte dve cisla zadana jako parametry
+
+prvni=$1
+druhe=$2
+
+echo "Soucet cisel $prvni a $druhe je $((prvni+druhe))."
+---
+
+
+[horacjiri@localhost bin]$ ./secist 100 300
+Soucet cisel 100 a 300 je 400.
+[horacjiri@localhost bin]$
+
+------------------------------------------------------------------------------------------------------
+   skriptik pro kontrolu pripojeneho uzivatele:
+  ----------------------------------------------
+------------------
+#! /bin/bash
+# vypise, zda a odkud je prihlaseny uzivatel zadany jako parametr
+
+who |grep $1
+-------------------
+=====================================================================================================
+		skript jetu:
+	       ------------- 
+[horacjiri@localhost mynotes]$ bin/jetu root
+root     :0           2018-02-27 08:59
+root     pts/0        2018-02-27 08:59 (:0)
+root     pts/1        2018-02-27 09:00 (:0)
+root     pts/2        2018-02-27 09:00 (:0)
+[horacjiri@localhost mynotes]$
+
+========================================================
+
+
+	Internacionalizace a lokalizace
+	-------------------------------
+	promenna LANG ... default je C ci POSIX
+
+   LC_ALL
+   LC_CTYPE
+   Lc_...
+
+[horacjiri@localhost mynotes]$ env | grep -i LANG
+LANG=cs_CZ.UTF-8
+
+LANG=C
+    =POSIX
+
+-----------------------
+
+[horacjiri@localhost mynotes]$ export LANG=C
+[horacjiri@localhost mynotes]$ man man
+[horacjiri@localhost mynotes]$ # a uz bude anglicky
+
+==========================================================================================
+poslani promenne do programu (zde napr. do man, ale v sessione se nastaveni LANG nezmeni) :
+--------------------------------------------------------------------------------------------
+
+[horacjiri@localhost mynotes]$ LANG=cs_CZ.UTF-8 man man
+
+=============================================================================================
+
+        Pocet lokalizaci :
+       -------------------
+
+[horacjiri@localhost mynotes]$ locale -a |wc -l
+741
+[horacjiri@localhost mynotes]$
+
+ Ukazka jen pro anglictinu:
+-----------------------------
+[horacjiri@localhost mynotes]$ locale -a | grep en.
+en_AG                                              
+en_AG.utf8                                         
+en_AU                                              
+en_AU.iso88591                                     
+en_AU.utf8                                         
+en_BW                                              
+en_BW.iso88591                                     
+en_BW.utf8                                         
+en_CA                                              
+en_CA.iso88591                                     
+en_CA.utf8                                         
+en_DK                                              
+en_DK.iso88591                                     
+en_DK.utf8                                         
+en_GB                                              
+en_GB.iso88591
+en_GB.iso885915
+en_GB.utf8
+en_HK
+en_HK.iso88591
+en_HK.utf8
+en_IE
+en_IE@euro
+en_IE.iso88591
+en_IE.iso885915@euro
+en_IE.utf8
+en_IN
+en_IN.utf8
+en_NG
+en_NG.utf8
+en_NZ
+en_NZ.iso88591
+en_NZ.utf8
+en_PH
+en_PH.iso88591
+en_PH.utf8
+en_SG
+en_SG.iso88591
+en_SG.utf8
+en_US
+en_US.iso88591
+en_US.iso885915
+en_US.utf8
+en_ZA
+en_ZA.iso88591
+en_ZA.utf8
+en_ZW
+en_ZW.iso88591
+en_ZW.utf8
+=====================================================================
+
+do lokalizace patri i preklady katalogu
+
+----------
+
+[horacjiri@localhost mynotes]$ LC_ALL=da locale -ck LC_TIME
+LC_TIME
+abday="Ne;Po;Út;St;Čt;Pá;So"
+day="Neděle;Pondělí;Úterý;Středa;Čtvrtek;Pátek;Sobota"
+abmon="led;úno;bře;dub;kvě;čen;čec;srp;zář;říj;lis;pro"
+mon="leden;únor;březen;duben;květen;červen;červenec;srpen;září;říjen;listopad;prosinec"
+am_pm=";"
+d_t_fmt="%a %-d. %B %Y, %H:%M:%S %Z"
+d_fmt="%-d.%-m.%Y"
+t_fmt="%H:%M:%S"
+t_fmt_ampm="%I:%M:%S"
+era=
+era_year=""
+era_d_fmt=""
+alt_digits=
+era_d_t_fmt=""
+era_t_fmt=""
+time-era-num-entries=0
+time-era-entries="N"
+week-ndays=7
+week-1stday=19971130
+week-1stweek=4
+first_weekday=2
+first_workday=2
+cal_direction=1
+timezone=""
+date_fmt="%a %b %e %H:%M:%S %Z %Y"
+time-codeset="UTF-8"
+[horacjiri@localhost mynotes]$
+
+------------------------------
+
+[horacjiri@localhost mynotes]$ LC_ALL=en_ZA locale -ck LC_TIME
+LC_TIME
+abday="Sun;Mon;Tue;Wed;Thu;Fri;Sat"
+day="Sunday;Monday;Tuesday;Wednesday;Thursday;Friday;Saturday"
+abmon="Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec"
+mon="January;February;March;April;May;June;July;August;September;October;November;December"
+am_pm=";"
+d_t_fmt="%a %d %b %Y %T %Z"
+d_fmt="%d/%m/%Y"
+t_fmt="%T"
+t_fmt_ampm=""
+era=
+era_year=""
+era_d_fmt=""
+alt_digits=
+era_d_t_fmt=""
+era_t_fmt=""
+time-era-num-entries=0
+time-era-entries="S"
+week-ndays=7
+week-1stday=19971130
+week-1stweek=0
+first_weekday=1
+first_workday=2
+cal_direction=1
+timezone=""
+date_fmt="%a %b %e %H:%M:%S %Z %Y"
+time-codeset="ISO-8859-1"
+[horacjiri@localhost mynotes]$
+
+====================================================================================================
+
+ 	 		Nastroje pro zpracovani textu
+		      ---------------------------------
+
+1) tr (z angl. 'transform') 
+      co    zaco
+
+   tr 123 312 # vsechny 1ky se prepise za 3ky, dvojky za jednicky, trojky za dvojky
+
+-------------------
+[horacjiri@localhost bin]$ vi hausnumera
+[horacjiri@localhost bin]$
+[horacjiri@localhost bin]$
+[horacjiri@localhost bin]$ cat hausnumera
+3
+2123456
+987654321
+1592348974
+777788888999999
+1111112222223333333
+[horacjiri@localhost bin]$ tr 123 312 < hausnumera
+2
+1312456
+987654213
+3591248974
+777788888999999
+3333331111112222222
+[horacjiri@localhost bin]$ tr 12 312 < hausnumera
+3
+1313456
+987654313
+3591348974
+777788888999999
+3333331111113333333
+[horacjiri@localhost bin]$ tr -d 123 < hausnumera
+
+456
+987654
+5948974
+777788888999999
+
+[horacjiri@localhost bin]$
+-------------------------------------------------------------------
+
+tr se da vyuzit i na CDLF (dosovy soubor a jeho koncove radky):
+tr -d "\r" < dos_soubor > unix_soubor
+
+nebo pri kopirovani fotek z fotaku
+DSC_BC2_8895.JPG  
+
+==========================================================================
+
+[horacjiri@localhost bin]$ cat kus_textu_z_doby_dernych_stitku
+10 REM PAMATUJETE BASIC?
+20 LET A=32
+30 LET B=13
+[horacjiri@localhost bin]$
+
+   # prevod z velkych na mala pismena pomoci tr:
+[horacjiri@localhost bin]$ tr "[:upper:]" "[:lower:]" < kus_textu_z_doby_dernych_stitku
+10 rem pamatujete basic?
+20 let a=32
+30 let b=13
+[horacjiri@localhost bin]$
+
+================================================================================================
+
+
+racjiri@localhost bin]$ tr -d "[:digit:]" < kus_textu_z_doby_dernych_stitku
+ REM PAMATUJETE BASIC?
+ LET A=
+ LET B=
+[horacjiri@localhost bin]$ cat kus_textu_z_doby_dernych_stitku
+10 REM PAMATUJETE BASIC?
+20 LET A=32
+30 LET B=13
+[horacjiri@localhost bin]$
+
+------
+[horacjiri@localhost bin]$ tr -d "[:digit:]" < kus_textu_z_doby_dernych_stitku |tr -d "[:blank:]"
+REMPAMATUJETEBASIC?
+LETA=
+LETB=
+[horacjiri@localhost bin]$
+
+=====================================================================================================
+
+2) grep (puvod slova je ve starem editoru, byla zde moznost hledat v celem souboru pomoci: g(jako global), r 
+   asi pro reg.vyrazy ep, takze timto nastrojem)
+
+   grep obsahuje 3 grepy:
+
+   A) fgrep (neboli 'fast grep', neboli 'jedoduchy grep') - nejjednodussi pouziti, hleda vzorek v textu
+
+      - je to totez jako: grep -F (=fgrep) 
+      - je velmi rychly
+      Ukazka v prohledavani slovniku:
+    ------------------------------------
+   [horacjiri@localhost bin]$ find /usr/share -name words
+/usr/share/dict/words
+[horacjiri@localhost bin]$ grep -F "swan" /usr/share/dict/words
+[horacjiri@localhost bin]$ grep -F "swan" /usr/share/dict/words
+Aswan                                                          
+Bophuthatswana                                                 
+Botswana                                                       
+botswana                                                       
+cob-swan                                                       
+miswandered                                                    
+swan                                                           
+swan-bosomed                                                   
+swan-clad                                                      
+swandown                                                       
+swan-drawn                                                     
+swan-eating                                                    
+swan-fashion                                                   
+swanflower                                                     
+swang                                                          
+swangy                                                         
+swanherd                                                       
+swanherds                                                      
+swanhood                                                       
+swan-hopper                                                    
+swan-hopping                                                   
+swanimote                                                      
+swank                                                          
+swanked                                                        
+swanker                                                        
+swankest                                                       
+swankey                                                        
+swankie                                                        
+swankier                                                       
+swankiest                                                      
+swankily                                                       
+swankiness                                                     
+swanking                                                       
+swankness                                                      
+swankpot                                                       
+swanks                                                         
+swanky                                                         
+swan-like                                                      
+swanlike                                                       
+swan-mark                                                      
+swanmark                                                       
+swanmarker                                                     
+swanmarking
+swanmote
+swan-neck
+swanneck
+swannecked
+swanned
+swanner
+swanneries
+swannery
+swannet
+swanning
+swannish
+swanny
+swan-pan
+swanpan
+swanpans
+swan-plumed
+swan-poor
+swan-proud
+swans
+swan's-down
+swansdown
+swanskin
+swanskins
+swan-sweet
+swan-tuned
+swan-upper
+swan-upping
+swanweed
+swan-white
+swan-winged
+swanwort
+swing-swang
+Tswana
+tswana
+Tswanas
+unswanlike
+[horacjiri@localhost bin]$
+
+-------------------------
+
+Regularni vyrazy, podle POSIX jsou standardizovany 2 druhy(dialekty)
+=====================================================================
+
+1) BRE(Basic Regular Expressions) - defaultne je mensina znaku jako specialni, mnohem vic k dispozici normalnich
+				    znaku
+                  pro vyber BRE:  grep -G  (viz man grep) nebo i grep bez niceho, default je BRE
+           jak je mit specialni, kdyz chceme:     \{n,m\}
+                                                  \( re \)  ... \1  -- jeji vyvolani (jako prvni schovavacka)
+										-az 9 odkazu mozno
+2) ERE (Extended Regular Expr.) - defaultne je spousta znaku brano jako specialni
+                  pro vyber ERE:  grep -E (to same je egrep)
+                  moznost udelat:  +  ... rika, ze to(a muze to byt cely regular.vyraz), tak se muze vyskytovat
+                  1 a vickrat
+                                   ? ... muze a nemusi 0krat a vickrat
+                                (  |  ) ... grep -E "^(blackbird|swan)" /usr/share/dict/words ... to nebo to
+
+existuji znaky, kt. jsou spolecne obema temto skupinam : 
+ 1) . (tecka)  zastupuje jeden libovolny znak pro hledani 
+ 2) * (hvezdicka)  predchazejici znak se smi opakovat libovolne krat
+ 3) jedina podobnost s gobingem  [ ]  
+    [:lower:]
+    [:digit:]
+    [=e=] ... znamena: vsechny formy pismena e (i s carkou, hackem)
+    [.ch.] 
+
+priklady tech dvojteckovych posix trid:
+alnum, alpha, blank(mezery a tabul , digit, cgtnl,graph, print, punct, space (jakykoli prazdny znak), xdigit,
+lower,...
+
+ 4) ukazovatka - odpovidaji poloze znaku 
+    ^    ... na zacatku retezce nebo na zacatku radku
+    $    ... na konci retezce nebo na konci radku
+
+
+ukazky:
+---------
+[horacjiri@localhost bin]$ grep "^swan$" /usr/share/dict/words
+swan
+[horacjiri@localhost bin]$
+---
+[horacjiri@localhost bin]$ grep "^s[wvo]an$" /usr/share/dict/words
+swan
+-------------------------------------------
+
+grep ma nejaky vlastni algoritmus jak pozna co chceme, kdyz nerekneme zadne parametry, napr.:
+-----------------------------------------------------------------------------------------------
+
+ grep "vyraz" soubor 
+
+ - bez parametru => nahodi fast grep (fgrep, grep -F)
+ - kdyz tam bude, tak :
+ -  grep -E 
+
+        IGNORE CASE, INVERT MATCH
+       ----------------------------
+ -i  ... ignore case
+ -v   ... invert match 
+  (grep -v "^$" ... takto vynecha vsechny mezery)
+
+
+ -r  ... rekne navic ve kterem souboru :
+
+  [horacjiri@localhost bin]$ grep -r alias /etc/profile*
+/etc/profile:# Functions and aliases go in /etc/bashrc
+/etc/profile.d/colorls.sh:  alias ll='ls -l' 2>/dev/null
+/etc/profile.d/colorls.sh:  alias l.='ls -d .*' 2>/dev/null
+/etc/profile.d/colorls.sh:alias ll='ls -l --color=auto' 2>/dev/null
+/etc/profile.d/colorls.sh:alias l.='ls -d .* --color=auto' 2>/dev/null
+/etc/profile.d/colorls.sh:alias ls='ls --color=auto' 2>/dev/null
+/etc/profile.d/vim.sh:  # for bash and zsh, only if no alias is already set
+/etc/profile.d/vim.sh:  alias vi >/dev/null 2>&1 || alias vi=vim
+/etc/profile.d/mc.sh:# Don't define aliases in plain Bourne shell
+/etc/profile.d/mc.sh:alias mc='. /usr/libexec/mc/mc-wrapper.sh'
+/etc/profile.d/which2.sh:alias which='alias | /usr/bin/which --tty-only --read-alias --show-dot --show-tilde'
+/etc/profile.d/mc.csh:alias mc 'source /usr/libexec/mc/mc-wrapper.csh'
+/etc/profile.d/vim.csh:        alias vi vim
+/etc/profile.d/colorls.csh:alias ll 'ls -l'
+/etc/profile.d/colorls.csh:alias l. 'ls -d .*'
+/etc/profile.d/colorls.csh:alias ll 'ls -l --color=auto'
+/etc/profile.d/colorls.csh:alias l. 'ls -d .* --color=auto'
+/etc/profile.d/colorls.csh:alias ls 'ls --color=auto'
+
+
+nebo : 
+
+[horacjiri@localhost bin]$ grep -r 123 .
+./hausnumera:2123456
+[horacjiri@localhost bin]$
+==================================================================
+ad1) BRE podporuje :	grep -G
+		 	sed
+			ed
+			vi
+			ex
+			more
+
+ad2) ERE podporuje : 	grep -E
+			awk
+			lex
+
+kniha:
+Mastering Regular Expressions, 3rd Edition od Jeffrey Friedl
+
+
+============================================================================================================
+				SED = Stream Editor
+                             ------------------------
+- v praxi na jednoduche ukony 
+    Priklad: 
+   ----------
+
+ su root
+ sfdisk 
+ sfdisk -d /dev/sda | sed 's/sda/sdc/'
+ sfdisk -d /dev/sda | sed 's/sda/sdc/' | sfdisk /dev/sdc
+------------------------------------------------------------------------------
+
+[horacjiri@localhost mynotes]$ cat test
+ jedna dva tri
+jedna jedna jedna
+dva dva dva
+[horacjiri@localhost mynotes]$ sed 's/jedna/deset/1' test
+ deset dva tri
+deset jedna jedna
+dva dva dva
+[horacjiri@localhost mynotes]$ sed 's/jedna/deset/g' test
+ deset dva tri
+deset deset deset
+dva dva dva
+[horacjiri@localhost mynotes]$ sed 's/jedna/deset/3' test
+ jedna dva tri
+jedna jedna deset
+dva dva dva
+[horacjiri@localhost mynotes]$
+----------
+[horacjiri@localhost mynotes]$ sed 's/^[td]/Ph/' test
+ jedna dva tri
+jedna jedna jedna
+Phva dva dva
+[horacjiri@localhost mynotes]$
+---------------------------------------
+
+'s  ... search ad replace
+/g  ... global nebo pokud je tam cislo tak jen vyskyt v tom poradi
+
+
+
+Kdyz chci nahradit a hledat vyraz lomitka, neni v sed nutne pouzivat syntax s lomitkovymi oddelovaci, 
+-----------------------------------------------------------------------------------------------------
+ale mohu pouzit jine znaky, jen je musim uvest tak kam patri, sed to pozna, napr.:
+---------------------------------------------------------------------------------------------
+[horacjiri@localhost mynotes]$ cesta=/usr/local/bin
+[horacjiri@localhost mynotes]$ echo $cesta | sed 's;/local/;;'
+/usrbin
+[horacjiri@localhost mynotes]$ echo $cesta | sed 's;/local/;/;'
+/usr/bin
+[horacjiri@localhost mynotes]$
+
+ pri pouziti -e parametru:
+-----------------------------
+racjiri@localhost mynotes]$ echo $cesta | sed -e 's;/local/;/;' -e 's/usr/root/'
+/root/bin
+[horacjiri@localhost mynotes]$
+
+-------------------------
+vi scriptsed
+/<H1>/<h2>/g
+s:<[Bb][Rr]>:<br/>:g
+
+==========================================================
+
+[horacjiri@localhost mynotes]$ sed -n '/<html>/p' index.html
+<html>
+[horacjiri@localhost mynotes]$
+
+====================================================================================
+
+netisknu nic co prochazi - to zajisti parametr -n(noprint), 
+jen co je mezi 2. az 3. radkem (2. az 4. radkem) - parametr p (print) :
+---------------------------------------------------------------------------------------------------------------
+[horacjiri@localhost mynotes]$ sed -n '2,3p' index.html
+<head>
+</head>
+[horacjiri@localhost mynotes]$ sed -n '2,4p' index.html
+<head>
+</head>
+<body>
+[horacjiri@localhost mynotes]$
+
+====================================================================================== 
+
+			Debugovani v shellu
+	       	       ---------------------
+
+
+
+racjiri@localhost bin]$ sh -x kolikjetu.sh
++ who
++ wc -l
+5
++ echo 'Zprava do logu'
+[horacjiri@localhost bin]$
+
+
+
+
+Kdyz si to chci nastavit primo uvnitr skriptu: pres: set -x   #zapina tracing
+						     set +x   #vypina tracing - opet trochu nelogicka stara syntax
+
+priklad:
+--------
+#! /bin/bash
+# Jednoduchy skript, ktery spocita prihlasene uzivatele
+set -x
+who | wc -l
+echo "Zprava do logu" > pelmel.log
+set +x
+-----------------------------------------
+
+
+racjiri@localhost bin]$ ./kolikjetu.sh
++ who
++ wc -l
+5
++ echo 'Zprava do logu'
++ set +x
+[horacjiri@localhost bin]$
+
+-------------------------------------------------------------------------------------------------
+
+	   zasady:
+          --------
+	- program ma delat jednu jedinou vec, ale dobre
+	- nepsat neco co uz existuje(spis pouzit hotovy nastroj)
+	- zpracovavej spis data ve forme textu nez proud dat - tam, kde to jde
+	- pouzivat regularni vyrazy
+	- neni-li receno jinak, pouzij std vstup/std vystup a std chybovy vystup by se nemel s nimi michat
+	- nebud ukecany
+	- vytvarej na vystupu stejny format dat jako na vstupu
+	- nechte nekoho jineho udelat to tezke(pravdepodobne existuje uz spousta programu) 
+
+         KISS = keep it simple and straightforward(small, secure) 
+
+
+[horacjiri@localhost bin]$ date
+Út úno 27 11:42:05 CET 2018
+[horacjiri@localhost bin]$ cal
+      únor 2018
+Po Út St Čt Pá So Ne
+          1  2  3  4
+ 5  6  7  8  9 10 11
+12 13 14 15 16 17 18
+19 20 21 22 23 24 25
+26 27 28
+
+[horacjiri@localhost bin]$ bc
+bc 1.06.95
+Copyright 1991-1994, 1997, 1998, 2000, 2004, 2006 Free Software Foundation, Inc.
+This is free software with ABSOLUTELY NO WARRANTY.
+For details type `warranty'.
+
+============================================================================================================
+
+
+
+	databaze uzivatelu : 
+ co uzivatel, to jeden radek : 
+
+/etc/passwd 
+
+- jednotlive pole jsou oddelene dvojteckami
+
+V zasade se v linuxu pouzivaji 2 formy ulozeni dat : 
+
+1. metoda = oddeleni tabulatory - prehledne, ale nemuzu vynechavat hodnoty, vzdy se tam musi uvest hodnota v tom sloupecku, musi byt spravny pocet sloupcu -> tj. pripad fstab treba, jinak se v tom mount nevyzna
+---------------------------------------------------------------------------------------------------------------
+Pepik TAB	8
+Maruska	 TAB	1	
+Tonik TAB	2
+
+2. metoda = oddeleni carkami - prazdne pole zde muzeme umistit pomoci dvou carek
+----------------------------------------------------------------------------------
+Pepik,8
+Marusja,,1
+Tonik,2
+
+Jak s tim pracovat?
+====================
+programy:
+I) cut   ... s parametry -d ... delimiter
+			 -f ... policko=field to,to
+
+priklad - chci vybrat z /etc/passwd usera a komentar = prvni a pate policko z /etc/passwd 
+horacjiri Jiri Horacek
+reseni:
+------
+[horacjiri@localhost bin]$ cut -d : -f 1,5 /etc/passwd
+root:root
+bin:bin
+daemon:daemon
+adm:adm
+lp:lp
+sync:sync
+shutdown:shutdown
+halt:halt
+mail:mail
+uucp:uucp
+operator:operator
+games:games
+gopher:gopher
+ftp:FTP User
+nobody:Nobody
+dbus:System message bus
+rpc:Rpcbind Daemon
+vcsa:virtual console memory owner
+rtkit:RealtimeKit
+abrt:
+avahi-autoipd:Avahi IPv4LL Stack
+saslauth:Saslauthd user
+postfix:
+haldaemon:HAL daemon
+ntp:
+mysql:MySQL Server
+rpcuser:RPC Service User
+nfsnobody:Anonymous NFS User
+pulse:PulseAudio System Daemon
+sshd:Privilege-separated SSH
+tcpdump:
+unbound:Unbound DNS resolver
+horacjiri:Jiri Horacek
+cipisek:Cipisek
+[horacjiri@localhost bin]$
+
+=====================================
+  vybrani pouze pristupovych prav (=2.az 10.znak z ls):
+----------------------------------------------------------
+drwxrwxr-x 2 horacjiri horacjiri 4096 27. úno 11.26 .
+drwxrwxr-x 6 horacjiri horacjiri 4096 27. úno 11.49 ..
+-rwxrwxr-x 1 horacjiri horacjiri  520 26. úno 16.00 bonzacek
+-rw-rw-r-- 1 horacjiri horacjiri   67 27. úno 09.46 hausnumera
+-rwxrwxr-x 1 horacjiri horacjiri   94 27. úno 09.18 jetu
+-rwxrwxr-x 1 horacjiri horacjiri  130 27. úno 11.26 kolikjetu.sh
+-rw-rw-r-- 1 horacjiri horacjiri   49 27. úno 09.51 kus_textu_z_doby_dernych_stitku
+-rw-rw-r-- 1 horacjiri horacjiri    9 26. úno 15.37 nusers
+-rw-rw-r-- 1 horacjiri horacjiri   15 27. úno 11.26 pelmel.log
+-rwxrwxr-x 1 horacjiri horacjiri  136 27. úno 09.10 secti
+[horacjiri@localhost bin]$ ls -l|cut -c 2-10
+elkem 32
+rwxrwxr-x
+rw-rw-r--
+rwxrwxr-x
+rwxrwxr-x
+rw-rw-r--
+rw-rw-r--
+rw-rw-r--
+rwxrwxr-x
+[horacjiri@localhost bin]$
+
+
+Vybrat jen IP adresy z /etc/hosts souboru: 
+=============================================
+s vyuzitim mezer a radeji i tabelatoru:
+----------------------------------------
+[horacjiri@localhost bin]$ cut -d '\t' -f 1 /etc/hosts
+cut: oddělovač musí být jediný znak
+Více informací získáte příkazem „cut --help“.
+[horacjiri@localhost bin]$ cut -d ' ' -f 1 /etc/hosts
+127.0.0.1
+::1
+[horacjiri@localhost bin]$
+
+
+finta- jak vlozit tabelator, kdyz nepodporuje \t? pomoci: Ctrl v a zmacknout TAB (a vlozi se mezera presne odpovidajici TAB)
+
+-------------------
+
+[horacjiri@localhost bin]$ cut -d ' ' -f 1 /etc/hosts | cut -d '        ' -f 1 /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+[horacjiri@localhost bin]$
+
+--------------------------------------------------------------------------------------------------------------
+
+
+					SED - priklady:
+				-------------------------------
+
+[horacjiri@localhost mynotes]$ sed 's|<neco>\(.*\)</neco>|<nic>\1</nic>|' data.xml
+<?xml>
+        <data>
+                <row><x1><nic>neco neco</nic><jmeno>Ondra</jmeno></x1></row>
+                <row><x1><nic>neco</nic><jmeno>Ondra</jmeno></x1></row>
+                <row><x1><nic>necolkjlkjh neco</nic><jmeno>Ondra</jmeno></x1></row>
+                <row><x1><nic>neco neco</nic><jmeno>David</jmeno></x1></row>
+                <row><x1><nic>neco neco</neco><jmeno>Pavel</jmeno></x1><neco>nic</nic></row>
+        </data>
+
+[horacjiri@localhost mynotes]$ sed 's|<neco>\([^<]*\)</neco>|<nic>\1</nic>|' data.xml
+<?xml>
+        <data>
+                <row><x1><nic>neco neco</nic><jmeno>Ondra</jmeno></x1></row>
+                <row><x1><nic>neco</nic><jmeno>Ondra</jmeno></x1></row>
+                <row><x1><nic>necolkjlkjh neco</nic><jmeno>Ondra</jmeno></x1></row>
+                <row><x1><nic>neco neco</nic><jmeno>David</jmeno></x1></row>
+                <row><x1><nic>neco neco</nic><jmeno>Pavel</jmeno></x1><neco>nic</neco></row>
+        </data>
+
+[horacjiri@localhost mynotes]$ sed 's|<neco>\([^<]*\)</neco>\(<jmeno>.*</jmeno>\)|\2<nic>\1</nic>|' data.xml
+<?xml>
+        <data>
+                <row><x1><jmeno>Ondra</jmeno><nic>neco neco</nic></x1></row>
+                <row><x1><jmeno>Ondra</jmeno><nic>neco</nic></x1></row>
+                <row><x1><jmeno>Ondra</jmeno><nic>necolkjlkjh neco</nic></x1></row>
+                <row><x1><jmeno>David</jmeno><nic>neco neco</nic></x1></row>
+                <row><x1><jmeno>Pavel</jmeno><nic>neco neco</nic></x1><neco>nic</neco></row>
+        </data>
+
+==============================================================
+
+[horacjiri@localhost mynotes]$ sed "s|<jmeno>.*</jmeno>|<jmeno>$(hostname)</jmeno>|"
+^C
+[horacjiri@localhost mynotes]$ sed "s|<jmeno>.*</jmeno>|<jmeno>$(hostname)</jmeno>|" data.xml
+<?xml>
+        <data>
+                <row><x1><neco>neco neco</neco><jmeno>localhost.localdomain</jmeno></x1></row>
+                <row><x1><neco>neco</neco><jmeno>localhost.localdomain</jmeno></x1></row>
+                <row><x1><neco>necolkjlkjh neco</neco><jmeno>localhost.localdomain</jmeno></x1></row>
+                <row><x1><neco>neco neco</neco><jmeno>localhost.localdomain</jmeno></x1></row>
+                <row><x1><neco>neco neco</neco><jmeno>localhost.localdomain</jmeno></x1><neco>nic</neco></row>
+        </data>
+
+[horacjiri@localhost mynotes]$ sed "s|<jmeno>.*</jmeno>|<jmeno>`hostname`</jmeno>|" data.xml
+<?xml>
+        <data>
+                <row><x1><neco>neco neco</neco><jmeno>localhost.localdomain</jmeno></x1></row>
+                <row><x1><neco>neco</neco><jmeno>localhost.localdomain</jmeno></x1></row>
+                <row><x1><neco>necolkjlkjh neco</neco><jmeno>localhost.localdomain</jmeno></x1></row>
+                <row><x1><neco>neco neco</neco><jmeno>localhost.localdomain</jmeno></x1></row>
+                <row><x1><neco>neco neco</neco><jmeno>localhost.localdomain</jmeno></x1><neco>nic</neco></row>
+        </data>
+
+[horacjiri@localhost mynotes]$ sed "s|<jmeno>.*</jmeno>|<jmeno>`hostname`</jmeno>|" data.xml
+
+===========================================================================
+
+			awk + sed
+
+Examples:
+        gawk '{ sum += $1 }; END { print sum }' file
+        gawk -F: '{ print $1 }' /etc/passwd
+[horacjiri@localhost mynotes]$ awk '^C
+[horacjiri@localhost mynotes]$ awk '/<neco>neco neco</neco>/ { print $0 }' data.xml
+awk: /<neco>neco neco</neco>/ { print $0 }
+awk:                         ^ unterminated regexp
+[horacjiri@localhost mynotes]$ awk '/<neco>neco neco<\/neco>/ { print $0 }' data.xml
+                <row><x1><neco>neco neco</neco><jmeno>Ondra</jmeno></x1></row>
+                <row><x1><neco>neco neco</neco><jmeno>David</jmeno></x1></row>
+                <row><x1><neco>neco neco</neco><jmeno>Pavel</jmeno></x1><neco>nic</neco></row>
+[horacjiri@localhost mynotes]$ awk '/<neco>neco neco<\/neco>/ { sum++ } END { print sum  }' data.xml
+3
+[horacjiri@localhost mynotes]$ sed "s|<jmeno>.*</jmeno>|<jmeno>`sed 's/nameserver//^C/etc/resolv.conf`</jmeno>|" data.xml
+[horacjiri@localhost mynotes]$ sed 's/nameserver//^C/etc/resolv.conf
+> ^C
+[horacjiri@localhost mynotes]$ sed 's/nameserver// /etc/resolv.conf
+> bash: neočekávaný konec souboru při hledání znaku odpovídajícímu „'“
+bash: chyba syntaxe: nenadálý konec souboru
+[horacjiri@localhost mynotes]$ sed 's/nameserver//' /etc/resolv.conf
+# Generated by NetworkManager
+# domain class.skola.cz
+# search class.skola.cz
+#  10.2.0.5
+#  [horacjiri@localhost mynotes]$ sed 's/nameserver //' /etc/resolv.conf
+#  # Generated by NetworkManager
+#  domain class.skola.cz
+#  search class.skola.cz
+#  10.2.0.5
+#  [horacjiri@localhost mynotes]$ sed -n 's/nameserver //' /etc/resolv.conf
+#  [horacjiri@localhost mynotes]$ sed -n 's/nameserver //P' /etc/resolv.conf
+#  sed: -e výraz č. 1, znak 16: neznámý přepínač pro „s“
+#  [horacjiri@localhost mynotes]$ sed -n 's/nameserver //p' /etc/resolv.conf
+#  10.2.0.5
+#  [horacjiri@localhost mynotes]$ sed 's/nameserver //p' /etc/resolv.conf
+#  # Generated by NetworkManager
+#  domain class.skola.cz
+#  search class.skola.cz
+#  10.2.0.5
+#  10.2.0.5
+#  [horacjiri@localhost mynotes]$ sed -n 's/nameserver //p' /etc/resolv.conf
+#  10.2.0.5
+#  [horacjiri@localhost mynotes]$ grep namespace /etc/resolv.conf | sed -n 's/nameserver //p'
+#  [horacjiri@localhost mynotes]$ grep nameserver /etc/resolv.conf | sed -n 's/nameserver //p'
+#  10.2.0.5
+#  [horacjiri@localhost mynotes]$ grep nameserver /etc/resolv.conf | sed 's/nameserver //'
+#  10.2.0.5
+#  [horacjiri@localhost mynotes]$ sed -n 's/nameserver //p' /etc/resolv.conf
+#  10.2.0.5
+#  [horacjiri@localhost mynotes]$
+#
+#  ===========================================================================================
+#
+#
+ [root@localhost approximate-enhanced-covers-impl]# git show 11111                                  
+commit 486b6e4e72a5074e669c61060cbead45c249b3f5                                                    
+Author: root <root@localhost.localdomain>                                                          
+Date:   Wed Feb 28 14:30:42 2018 +0100                                                             
+
+    nase zmena
+
+diff --git a/README.txt b/README.txt
+index 38feea5..dde2756 100644       
+--- a/README.txt                    
++++ b/README.txt                    
+@@ -20,3 +20,8 @@ relaxed_covers_hamming <k>
+                                            
+ In experiments mode, the given string is read from given file, some statistics are reported to standard output: number of found covers, peak number of d-subset elements stored in memory at a time, total number of examined d-subset eleme
+ <binary_of_program> <input_file_path> <input_length> <k>                                                                                                                                                                                    
++                                                                                                                                                                                                                                            
++                                                                                                                                                                                                                                            
++                                                                                                                                                                                                                                            
++                                                                                                                                                                                                                                            
++neo neco                                                                                                                                                                                                                                    
+[root@localhost approximate-enhanced-covers-impl]# git log                                                                                                                                                                                   
+commit 486b6e4e72a5074e669c61060cbead45c249b3f5                                                                                                                                                                                              
+Author: root <root@localhost.localdomain>                                                                                                                                                                                                    
+Date:   Wed Feb 28 14:30:42 2018 +0100                                                                                                                                                                                                       
+
+    nase zmena
+
+commit 21bbe314acd94722334d69f267bf90be919cf3f4
+Author: Ondřej Guth <ondrej.guth@fit.cvut.cz>  
+Date:   Mon Apr 17 20:30:07 2017 +0200         
+
+    bug correction
+
+commit 1cbcaea203cfdfb05f0dfa570ddc856f48758980
+Author: Ondřej Guth <ondrej.guth@fit.cvut.cz>  
+Date:   Mon Apr 17 20:10:29 2017 +0200         
+
+    copyright notices, readme and license files
+
+commit 15844f214c0f246e9f4222c5681804f9bd959e9f
+Author: Ondřej Guth <ondrej.guth@fit.cvut.cz>  
+Date:   Fri Apr 14 21:39:24 2017 +0200         
+
+    proper head comments
+
+commit 97ea988a9cccf42b4302d4028168a4d170a64ff0
+Author: Ondřej Guth <ondrej.guth@fit.cvut.cz>  
+Date:   Fri Apr 14 21:33:35 2017 +0200         
+
+    initial commit
+[root@localhost approximate-enhanced-covers-impl]# git tag
+1011                                                      
+11111                                                     
+[root@localhost approximate-enhanced-covers-impl]# git checkout 1011
+Note: checking out '1011'.                                          
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.     
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+  git checkout -b new_branch_name
+
+HEAD is now at 21bbe31... bug correction
+[root@localhost approximate-enhanced-covers-impl]# ls
+Automaton.hh                HammingCoverAutomaton.hh          HammingRelaxedEnhancedCoverAutomaton.cc  Makefile                                   NondeterministicState.hh            State.hh
+EnhancedCoverAutomaton.hh   HammingEnhancedCoverAutomaton.cc  HammingRelaxedEnhancedCoverAutomaton.hh  NondeterministicHammingSuffixAutomaton.cc  README.txt                                  
+enhanced_covers_Hamming.cc  HammingEnhancedCoverAutomaton.hh  LICENSE.txt                              NondeterministicHammingSuffixAutomaton.hh  relaxed_enhanced_covers_Hamming.cc          
+[root@localhost approximate-enhanced-covers-impl]# cat README.txt                                                                                                                             
+This is implementation of algorithms for computing all k-approximate enhanced covers and all relaxed k-approximate enhanced covers of given string.                                           
+
+It is licensed under GPLv3 (see file LICENSE.txt).
+
+This program is written in C++98 and does not require any non-standard library to compile or run. To compile, it is recommended to use gcc version 4 (or newer) and GNU Make.
+
+This software consists of two programs:
+covers_hamming: implementation of algorithm for computing all k-approximate enhanced covers
+relaxed_covers_hamming: implementation of algorithm for computing all relaxed k-approximate enhanced covers
+
+To compile them, run:
+make ../dist/covers_hamming
+and                        
+make ../dist/relaxed_covers_hamming
+
+The programs may be run in two modes.
+
+In results mode (relaxed_covers_hamming only), the given string (i.e., the string of which to compute covers) is read from standard input, found (relaxed) k-approximate covers are reported to standard output. Some debugging info may be sent to error output. Program should be invoked as:                                                                                                                                                                                           
+relaxed_covers_hamming <k>                                                                                                                                                                                                                   
+
+In experiments mode, the given string is read from given file, some statistics are reported to standard output: number of found covers, peak number of d-subset elements stored in memory at a time, total number of examined d-subset elements, peak number of states stored in memory at a time. Program should be invoked as:                                                                                                                                                          
+<binary_of_program> <input_file_path> <input_length> <k>                                                                                                                                                                                     
+[root@localhost approximate-enhanced-covers-impl]# git tag
+1011                                                      
+11111                                                     
+[root@localhost approximate-enhanced-covers-impl]# git checkout 11111
+Previous HEAD position was 21bbe31... bug correction                 
+HEAD is now at 486b6e4... nase zmena                                 
+[root@localhost approximate-enhanced-covers-impl]# cat README.txt 
+This is implementation of algorithms for computing all k-approximate enhanced covers and all relaxed k-approximate enhanced covers of given string.
+
+It is licensed under GPLv3 (see file LICENSE.txt).
+
+This program is written in C++98 and does not require any non-standard library to compile or run. To compile, it is recommended to use gcc version 4 (or newer) and GNU Make.
+
+This software consists of two programs:
+covers_hamming: implementation of algorithm for computing all k-approximate enhanced covers
+relaxed_covers_hamming: implementation of algorithm for computing all relaxed k-approximate enhanced covers
+
+To compile them, run:
+make ../dist/covers_hamming
+and                        
+make ../dist/relaxed_covers_hamming
+
+The programs may be run in two modes.
+
+In results mode (relaxed_covers_hamming only), the given string (i.e., the string of which to compute covers) is read from standard input, found (relaxed) k-approximate covers are reported to standard output. Some debugging info may be sent to error output. Program should be invoked as:                                                                                                                                                                                           
+relaxed_covers_hamming <k>                                                                                                                                                                                                                   
+
+In experiments mode, the given string is read from given file, some statistics are reported to standard output: number of found covers, peak number of d-subset elements stored in memory at a time, total number of examined d-subset elements, peak number of states stored in memory at a time. Program should be invoked as:                                                                                                                                                          
+<binary_of_program> <input_file_path> <input_length> <k>                                                                                                                                                                                     
+
+
+
+
+  
+
+
+[root@localhost approximate-enhanced-covers-impl]# git tag
+1011                                                      
+11111                                                     
+[root@localhost approximate-enhanced-covers-impl]# ls     
+Automaton.hh                HammingCoverAutomaton.hh          HammingRelaxedEnhancedCoverAutomaton.cc  Makefile                                   NondeterministicState.hh            State.hh
+EnhancedCoverAutomaton.hh   HammingEnhancedCoverAutomaton.cc  HammingRelaxedEnhancedCoverAutomaton.hh  NondeterministicHammingSuffixAutomaton.cc  README.txt                                  
+enhanced_covers_Hamming.cc  HammingEnhancedCoverAutomaton.hh  LICENSE.txt                              NondeterministicHammingSuffixAutomaton.hh  relaxed_enhanced_covers_Hamming.cc          
+[root@localhost approximate-enhanced-covers-impl]# make                                                                                                                                       
+mkdir --parent ../build                                                                                                                                                                       
+g++  -DNDEBUG -pipe -pedantic -ansi -Wall -Wextra -Werror -O3 -fomit-frame-pointer -s -march=native -c -o ../build/enhanced_covers_Hamming-exp.o enhanced_covers_Hamming.cc                   
+mkdir --parent ../build                                                                                                                                                                       
+g++  -DNDEBUG -pipe -pedantic -ansi -Wall -Wextra -Werror -O3 -fomit-frame-pointer -s -march=native -c -o ../build/HammingEnhancedCoverAutomaton-exp.o HammingEnhancedCoverAutomaton.cc       
+mkdir --parent ../dist                                                                                                                                                                        
+g++  -DNDEBUG -pipe -pedantic -ansi -Wall -Wextra -Werror -O3 -fomit-frame-pointer -s -o ../dist/covers_hamming ../build/enhanced_covers_Hamming-exp.o ../build/HammingEnhancedCoverAutomaton-exp.o
+[root@localhost approximate-enhanced-covers-impl]# ls                                                                                                                                              
+Automaton.hh                HammingCoverAutomaton.hh          HammingRelaxedEnhancedCoverAutomaton.cc  Makefile                                   NondeterministicState.hh            State.hh     
+EnhancedCoverAutomaton.hh   HammingEnhancedCoverAutomaton.cc  HammingRelaxedEnhancedCoverAutomaton.hh  NondeterministicHammingSuffixAutomaton.cc  README.txt                                       
+enhanced_covers_Hamming.cc  HammingEnhancedCoverAutomaton.hh  LICENSE.txt                              NondeterministicHammingSuffixAutomaton.hh  relaxed_enhanced_covers_Hamming.cc               
+[root@localhost approximate-enhanced-covers-impl]# cd ..                                                                                                                                           
+[root@localhost mynotes]# tar czf program.tgz approximate-enhanced-covers-impl/
+[root@localhost mynotes]# ls                                                   
+adr  approximate-enhanced-covers-impl  autori  bin  build  data.xml  dist  chyby  index.html  loginentries  notes_unixsh  program.tgz  scriptsed  seznam_autoru  seznam_autoru_od_b  seznam_autoru_od_z  soubor_pelmel  test  zaloha
+[root@localhost mynotes]# less program.tgz                                                                                                                                                                                          
+[root@localhost mynotes]# ls                                                                                                                                                                                                        
+adr  approximate-enhanced-covers-impl  autori  bin  build  data.xml  dist  chyby  index.html  loginentries  notes_unixsh  program.tgz  scriptsed  seznam_autoru  seznam_autoru_od_b  seznam_autoru_od_z  soubor_pelmel  test  zaloha
+[root@localhost mynotes]# git tag
+fatal: Not a git repository (or any of the parent directories): .git
+[root@localhost mynotes]# vim deploy.sh
+(reverse-i-search)`clone': git ^Cone https://gitlab.fit.cvut.cz/guthondr/approximate-enhanced-covers-impl.git
+[root@localhost mynotes]# git
+usage: git [--version] [--exec-path[=GIT_EXEC_PATH]] [--html-path]
+           [-p|--paginate|--no-pager] [--no-replace-objects]      
+           [--bare] [--git-dir=GIT_DIR] [--work-tree=GIT_WORK_TREE]
+           [--help] COMMAND [ARGS]                                 
+
+The most commonly used git commands are:
+   add        Add file contents to the index
+   bisect     Find by binary search the change that introduced a bug
+   branch     List, create, or delete branches                      
+   checkout   Checkout a branch or paths to the working tree        
+   clone      Clone a repository into a new directory               
+   commit     Record changes to the repository                      
+   diff       Show changes between commits, commit and working tree, etc
+   fetch      Download objects and refs from another repository         
+   grep       Print lines matching a pattern                            
+   init       Create an empty git repository or reinitialize an existing one
+   log        Show commit logs                                              
+   merge      Join two or more development histories together               
+   mv         Move or rename a file, a directory, or a symlink              
+   pull       Fetch from and merge with another repository or a local branch
+   push       Update remote refs along with associated objects              
+   rebase     Forward-port local commits to the updated upstream head       
+   reset      Reset current HEAD to the specified state                     
+   rm         Remove files from the working tree and from the index         
+   show       Show various types of objects                                 
+   status     Show the working tree status                                  
+   tag        Create, list, delete or verify a tag object signed with GPG   
+
+See 'git help COMMAND' for more information on a specific command.
+[root@localhost mynotes]# git help clone
+[root@localhost mynotes]# cd a          
+adr/                              approximate-enhanced-covers-impl/ autori/                           
+[root@localhost mynotes]# cd a                                                                        
+adr/                              approximate-enhanced-covers-impl/ autori/                           
+[root@localhost mynotes]# cd approximate-enhanced-covers-impl/                                        
+[root@localhost approximate-enhanced-covers-impl]# git tag                                            
+1011                                                                                                  
+11111                                                                                                 
+[root@localhost approximate-enhanced-covers-impl]# git tag | tail -n1                                 
+11111                                                                                                 
+[root@localhost approximate-enhanced-covers-impl]# git tag | tail -1                                 
+11111                                                                                                
+[root@localhost approximate-enhanced-covers-impl]# git tag | tail -^C
+[root@localhost approximate-enhanced-covers-impl]# useradd^Cm deploy
+[root@localhost approximate-enhanced-covers-impl]# usermo           
+usermod    usermount                                                
+[root@localhost approximate-enhanced-covers-impl]# usermod --help   
+Použití: usermod [volby] ÚČET                                       
+
+Volby:
+  -c, --comment KOMENTÁŘ        nová hodnota pole GECOS
+  -d, --home-dir DOMOV_ADR      nový domovský adresář uživatele
+  -e, --expiredate EXP_DATUM    nastaví vypršení platnosti účtu na EXP_DATUM
+  -f, --inactive NEAKTIV        zablokuje účet po NEAKTIV dnech od vypršení 
+  -g, --gid SKUPINA             nastaví novou primární SKUPINU              
+  -G, --groups SKUPINY          nový seznam dodatečných skupin, do kterých  
+                                má účet patřit                              
+  -a, --append                  přidá uživatele do dalších SKUPIN zadaných  
+                                volbou -G; neruší členství v ostatních sk.  
+  -h, --help                    zobrazí tuto nápovědu a skončí              
+  -l, --login NOVÝ_ÚČET         nová hodnota přihlašovacího jména           
+  -L, --lock                    zamkne uživatelský účet                     
+  -m, --move-home               přesune obsah původního domovského adresáře 
+                                do nového umístění (používejte pouze s -d)  
+  -o, --non-unique              povolí vytvoření uživatele s duplicitním    
+                                (nejedinečným) UID                          
+  -p, --password HESLO          použije nové zašifrované heslo              
+  -R, --root CHROOT_DIR         directory to chroot into                    
+  -s, --shell SHELL             nový přihlašovací shell uživatele           
+  -u, --uid UID                 nové UID pro uživatelský účet               
+  -U, --unlock                  odemkne uživatelský účet                    
+  -Z, --selinux-user SEUSER     new SELinux user mapping for the user account
+
+[root@localhost approximate-enhanced-covers-impl]# useradd
+Použití: useradd [volby] ÚČET                             
+         useradd -D                                       
+         useradd -D [volby]                               
+
+Volby:
+  -b, --base-dir ZÁKL_ADR       základní adresář pro domovský adresář nového
+                                uživatelského účtu                          
+  -c, --comment KOMENTÁŘ        pole GECOS nového účtu                      
+  -d, --home-dir DOMOV_ADR      domovský adresář nového účtu                
+  -D, --defaults                vypíše nebo změní výchozí nastavení         
+                                programu useradd                            
+  -e, --expiredate EXP_DATUM    datum vypršení platnosti nového účtu        
+  -f, --inactive NEAKTIV        doba neaktivity pro blokaci nového účtu     
+  -g, --gid SKUPINA             jméno nebo ID primární skupiny nového účtu  
+  -G, --groups SKUPINY          seznam dodatečných skupin, do kterých       
+                                má nový účet patřit                         
+  -h, --help                    zobrazí tuto nápovědu a skončí              
+  -k, --skel VZOR_ADR           použije alternativní vzorový adresář        
+  -K, --key KLÍČ=HODNOTA        přebije výchozí nastavení /etc/login.defs   
+  -l, --no-log-init             nepřidá uživatele do databází lastlog       
+                                a faillog                                   
+  -m, --create-home             vytvoří domovský adresář uživatele          
+  -M, --no-create-home          nevytvoří domovský adresář uživatele
+  -N, --no-user-group           nevytvoří skupinu se stejným jménem jako
+                                uživatel
+  -o, --non-unique              povolí vytvoření uživatele s duplicitním
+                                (nejedinečným) UID
+  -p, --password HESLO          zašifrované heslo nového účtu
+  -r, --system                  vytvoří systémový účet
+  -R, --root CHROOT_DIR         directory to chroot into
+  -s, --shell SHELL             přihlašovací shell nového účtu
+  -u, --uid UID                 uživatelské ID nového účtu
+  -U, --user-group              vytvoří skupinu se stejným jménem jako
+                                uživatel
+  -Z, --selinux-user SEUŽIVATEL pro mapování na SELinuxového uživatele
+                                použije SEUŽIVATELe
+
+[root@localhost approximate-enhanced-covers-impl]# useradd -m deploy
+[root@localhost approximate-enhanced-covers-impl]# ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa):
+Created directory '/root/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /root/.ssh/id_rsa.
+Your public key has been saved in /root/.ssh/id_rsa.pub.
+The key fingerprint is:
+db:e0:fc:dd:ad:8e:93:8b:bd:52:38:19:62:72:51:de root@localhost.localdomain
+The key's randomart image is:
++--[ RSA 2048]----+
+|         ..      |
+|        .. .     |
+|         .. E    |
+|      . + .      |
+|       +S. +     |
+|       o ++ .    |
+|        + .o .   |
+|         ..+oo . |
+|          o.*=+..|
++-----------------+
+[root@localhost approximate-enhanced-covers-impl]# ls ~/.ssh/
+id_rsa  id_rsa.pub
+[root@localhost approximate-enhanced-covers-impl]# cp ~/.ssh/id_rsa.pub ~deploy^C
+[root@localhost approximate-enhanced-covers-impl]# mkdir ~deploy/.ssh
+[root@localhost approximate-enhanced-covers-impl]# cp ~/.ssh/id_rsa.pub ~deploy/.ssh/authorized_keys
+[root@localhost approximate-enhanced-covers-impl]# chown -Rv deploy:deploy ~deploy/.ssh
+vlastník souboru „/home/deploy/.ssh/authorized_keys“ změněn na deploy:deploy
+vlastník souboru „/home/deploy/.ssh“ změněn na deploy:deploy
+[root@localhost approximate-enhanced-covers-impl]# ssh deploy@localhost
+The authenticity of host 'localhost (::1)' can't be established.
+RSA key fingerprint is cc:2a:91:98:aa:39:69:92:cd:a1:93:28:fe:4d:cf:5d.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'localhost' (RSA) to the list of known hosts.
+[deploy@localhost ~]$ odhlášení
+Connection to localhost closed.
+[root@localhost approximate-enhanced-covers-impl]#
+
+======================================================================================
+
+				for syntax:
+			      ---------------
+
+[root@localhost mynotes]# ls
+adr                               autori  build     deploy-remote.sh  dist       chyby       jmena.txt     notes_unixsh       scriptsed      seznam_autoru_od_b  soubor_pelmel  zaloha
+approximate-enhanced-covers-impl  bin     data.xml  deploy.sh         funkce.sh  index.html  loginentries  program-11111.tgz  seznam_autoru  seznam_autoru_od_z  test
+[root@localhost mynotes]# for jmeno in *.sh
+> do
+> echo $jmeno
+> logger $jmeno
+> done
+deploy-remote.sh
+deploy.sh
+funkce.sh
+[root@localhost mynotes]#
+
+
+========================================================================================================
+
+ [root@localhost mynotes]# for jmeno in soubor{1..10}.txt; do echo $jmeno; logger $jmeno; done
+soubor1.txt
+soubor2.txt
+soubor3.txt
+soubor4.txt
+soubor5.txt
+soubor6.txt
+soubor7.txt
+soubor8.txt
+soubor9.txt
+soubor10.txt
+
+
+=============================================================================================================
+
+[root@localhost mynotes]# for jmeno in `seq -w 1 10`; do echo $jmeno; logger $jmeno; done
+01
+02
+03
+04
+05
+06
+07
+08
+09
+10
+
+			 
