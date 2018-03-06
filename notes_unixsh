@@ -2,7 +2,7 @@
 $ ... uzivatelsky znak promptu
 ----------------------------------------------------------------------
 
-Thompson 
+Thompson shell ... byl interpret příkazů v prvních verzí operačního systému Unix od roku 1971
 Bourne shell  ... /bin/sh
 Bourne Again SHell  ... /bin/bash           ... napodoba Bourne shellu pod projektem GNU
 Korn Public Shell ... /bin/ksh  ... z Bell laboratori, pan Korn jeste decentne stale udrzuje
